@@ -14,7 +14,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); heig
 /* Header */
 header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 20px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
 header h1 { font-size: 1.2rem; color: var(--accent); white-space: nowrap; }
-.toolbar { display: flex; gap: 8px; flex-wrap: wrap; flex: 1; }
+.toolbar { display: flex; gap: 8px; flex-wrap: wrap; flex: 1; align-items: center; }
 .btn { padding: 8px 16px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface2); color: var(--text); cursor: pointer; font-size: 0.85rem; transition: all 0.2s; white-space: nowrap; }
 .btn:hover { border-color: var(--accent); }
 .btn-primary { background: var(--accent); color: white; border-color: var(--accent); }
@@ -25,14 +25,35 @@ header h1 { font-size: 1.2rem; color: var(--accent); white-space: nowrap; }
 select { padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface2); color: var(--text); font-size: 0.85rem; }
 .theme-toggle { margin-left: auto; cursor: pointer; font-size: 1.3rem; background: none; border: none; }
 
+/* Dropdown menu for converters */
+.dropdown { position: relative; display: inline-block; }
+.dropdown-btn { padding: 8px 16px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface2); color: var(--text); cursor: pointer; font-size: 0.85rem; white-space: nowrap; }
+.dropdown-btn:hover { border-color: var(--accent); }
+.dropdown-menu { display: none; position: absolute; top: 100%; left: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; min-width: 160px; z-index: 50; box-shadow: 0 4px 12px rgba(0,0,0,0.3); margin-top: 4px; }
+.dropdown-menu.show { display: block; }
+.dropdown-menu button { display: block; width: 100%; padding: 10px 16px; background: none; border: none; color: var(--text); font-size: 0.85rem; text-align: left; cursor: pointer; }
+.dropdown-menu button:hover { background: var(--surface2); }
+.dropdown-menu button:first-child { border-radius: 6px 6px 0 0; }
+.dropdown-menu button:last-child { border-radius: 0 0 6px 6px; }
+
 /* Main layout */
 .main { display: flex; flex: 1; overflow: hidden; }
 .pane { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-.pane-header { padding: 8px 16px; background: var(--surface); border-bottom: 1px solid var(--border); font-size: 0.8rem; color: var(--text2); display: flex; justify-content: space-between; align-items: center; }
+.pane-header { padding: 8px 16px; background: var(--surface); border-bottom: 1px solid var(--border); font-size: 0.8rem; color: var(--text2); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 textarea { flex: 1; width: 100%; padding: 16px; background: var(--input-bg); color: var(--text); border: none; resize: none; font-family: var(--mono); font-size: 14px; line-height: 1.6; outline: none; }
 .output-area { flex: 1; overflow: auto; padding: 16px; background: var(--input-bg); font-family: var(--mono); font-size: 14px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
 .divider { width: 3px; background: var(--border); cursor: col-resize; flex-shrink: 0; }
 .divider:hover { background: var(--accent); }
+
+/* Search bar */
+.search-bar { display: flex; align-items: center; gap: 8px; padding: 6px 16px; background: var(--surface); border-bottom: 1px solid var(--border); }
+.search-bar input { flex: 1; padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; background: var(--input-bg); color: var(--text); font-size: 0.8rem; font-family: var(--mono); outline: none; max-width: 200px; }
+.search-bar input:focus { border-color: var(--accent); }
+.search-bar .match-count { font-size: 0.75rem; color: var(--text2); white-space: nowrap; }
+
+/* JSON Path bar */
+.path-bar { padding: 6px 16px; background: var(--surface); border-top: 1px solid var(--border); font-family: var(--mono); font-size: 0.8rem; color: var(--green); min-height: 28px; display: flex; align-items: center; cursor: pointer; }
+.path-bar:empty::before { content: 'Click a line in output to see JSON path'; color: var(--text2); font-family: var(--font); }
 
 /* Sidebar */
 .sidebar { width: 260px; background: var(--surface); border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; }
@@ -66,6 +87,7 @@ textarea { flex: 1; width: 100%; padding: 16px; background: var(--input-bg); col
 .json-number { color: #d19a66; }
 .json-bool { color: #c678dd; }
 .json-null { color: #56b6c2; }
+mark.search-hl { background: #e2e052; color: #000; border-radius: 2px; }
 
 /* Spinner */
 .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 6px; }
@@ -73,6 +95,10 @@ textarea { flex: 1; width: 100%; padding: 16px; background: var(--input-bg); col
 
 /* Status bar */
 .status-bar { padding: 4px 16px; background: var(--surface); border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text2); display: flex; gap: 16px; }
+
+/* Output line hover */
+.output-area .json-line { cursor: pointer; padding: 0 4px; margin: 0 -4px; border-radius: 3px; }
+.output-area .json-line:hover { background: rgba(233,69,96,0.1); }
 
 /* Mobile */
 @media (max-width: 768px) {
@@ -95,6 +121,15 @@ textarea { flex: 1; width: 100%; padding: 16px; background: var(--input-bg); col
       <option value="tab">Tabs</option>
     </select>
     <button class="btn btn-ai" id="fixBtn" onclick="fixWithAI()">🤖 Fix with AI</button>
+    <div class="dropdown">
+      <button class="dropdown-btn" onclick="toggleDropdown(this)">🔄 Convert ▾</button>
+      <div class="dropdown-menu" id="convertMenu">
+        <button onclick="toYAML()">To YAML</button>
+        <button onclick="fromYAML()">From YAML</button>
+        <button onclick="toMarkdown()">To Markdown</button>
+        <button onclick="fromMarkdown()">From Markdown</button>
+      </div>
+    </div>
     <button class="btn" onclick="copyOutput()">📋 Copy</button>
     <button class="btn" onclick="saveToHistory()">💾 Save</button>
     <button class="btn" onclick="clearAll()">Clear</button>
@@ -114,12 +149,17 @@ textarea { flex: 1; width: 100%; padding: 16px; background: var(--input-bg); col
     <textarea id="input" placeholder="Paste your JSON here..." spellcheck="false"></textarea>
   </div>
   <div class="divider" id="divider"></div>
-  <div class="pane">
+  <div class="pane" id="outputPane">
     <div class="pane-header">
       <span>OUTPUT</span>
+      <div class="search-bar" style="border:none;padding:0;background:none;">
+        <input type="text" id="searchInput" placeholder="Search..." oninput="searchOutput()">
+        <span class="match-count" id="matchCount"></span>
+      </div>
       <span id="outputInfo"></span>
     </div>
     <div class="output-area" id="output"></div>
+    <div class="path-bar" id="pathBar" onclick="copyPathBar()"></div>
   </div>
   <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
@@ -151,10 +191,18 @@ const $inputInfo = document.getElementById('inputInfo');
 const $outputInfo = document.getElementById('outputInfo');
 const $status = document.getElementById('statusText');
 const $fixBtn = document.getElementById('fixBtn');
+const $pathBar = document.getElementById('pathBar');
+const $searchInput = document.getElementById('searchInput');
+const $matchCount = document.getElementById('matchCount');
 
 let lastFix = '';
+let lastFormattedText = ''; // raw text of output for search
 
 // Auto-format on paste
+$input.addEventListener('paste', () => {
+  setTimeout(() => formatJSON(), 300);
+});
+
 $input.addEventListener('input', () => {
   updateInputInfo();
   hideError();
@@ -170,14 +218,23 @@ function setStatus(text) { $status.textContent = text; }
 function showError(msg) { $error.textContent = msg; $error.classList.add('show'); }
 function hideError() { $error.classList.remove('show'); }
 
+// Dropdown
+function toggleDropdown(btn) {
+  const menu = btn.nextElementSibling;
+  menu.classList.toggle('show');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.dropdown')) {
+    document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show'));
+  }
+});
+
 function highlightJSON(str) {
-  // Tokenize and highlight JSON properly
   var result = '';
   var i = 0;
   while (i < str.length) {
     var ch = str[i];
     if (ch === '"') {
-      // Read full string
       var s = '"'; i++;
       while (i < str.length) {
         if (str[i] === '\\') { s += str[i] + (str[i+1]||''); i += 2; }
@@ -185,7 +242,6 @@ function highlightJSON(str) {
         else { s += str[i]; i++; }
       }
       var escaped = s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      // Check if this is a key (followed by optional whitespace and colon)
       var rest = str.slice(i);
       var m = rest.match(/^(\s*):/);
       if (m) {
@@ -214,6 +270,23 @@ function highlightJSON(str) {
   return result;
 }
 
+function wrapLines(html) {
+  // Wrap each line in a span for click-to-path
+  return html.split('\n').map((line, idx) =>
+    `<span class="json-line" data-line="${idx}">${line}</span>`
+  ).join('\n');
+}
+
+function setOutput(text, highlight = true) {
+  lastFormattedText = text;
+  const html = highlight ? highlightJSON(text) : escHtml(text);
+  $output.innerHTML = wrapLines(html);
+  $outputInfo.textContent = `${text.length.toLocaleString()} chars`;
+  $pathBar.textContent = '';
+  // Re-apply search if active
+  if ($searchInput.value) searchOutput();
+}
+
 async function formatJSON() {
   hideError();
   const json = $input.value.trim();
@@ -228,8 +301,7 @@ async function formatJSON() {
     });
     const data = await res.json();
     if (data.valid) {
-      $output.innerHTML = highlightJSON(data.formatted);
-      $outputInfo.textContent = `${data.formatted.length.toLocaleString()} chars`;
+      setOutput(data.formatted);
       setStatus('Formatted ✓');
     } else {
       showError(data.error);
@@ -253,8 +325,7 @@ async function minifyJSON() {
     });
     const data = await res.json();
     if (data.valid) {
-      $output.innerHTML = highlightJSON(data.formatted);
-      $outputInfo.textContent = `${data.formatted.length.toLocaleString()} chars`;
+      setOutput(data.formatted);
       setStatus('Minified ✓');
     } else {
       showError(data.error);
@@ -284,13 +355,218 @@ async function fixWithAI() {
       showDiff(data.changes);
       setStatus(`AI found ${data.changes.length} changes`);
     } else {
-      $output.innerHTML = highlightJSON(data.fixed);
+      setOutput(data.fixed);
       setStatus('AI: no changes needed ✓');
     }
   } catch (e) { showError('AI fix failed: ' + e.message); }
   finally {
     $fixBtn.disabled = false;
     $fixBtn.innerHTML = '🤖 Fix with AI';
+  }
+}
+
+// YAML conversion
+async function toYAML() {
+  hideError();
+  const json = $input.value.trim();
+  if (!json) return;
+  try {
+    const res = await fetch('/api/to-yaml', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ json })
+    });
+    const data = await res.json();
+    if (data.valid) {
+      setOutput(data.result, false);
+      setStatus('Converted to YAML ✓');
+    } else { showError(data.error); }
+  } catch (e) { showError('Request failed: ' + e.message); }
+}
+
+async function fromYAML() {
+  hideError();
+  const yamlStr = $input.value.trim();
+  if (!yamlStr) return;
+  try {
+    const res = await fetch('/api/from-yaml', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ yaml: yamlStr })
+    });
+    const data = await res.json();
+    if (data.valid) {
+      setOutput(data.result);
+      setStatus('Converted from YAML ✓');
+    } else { showError(data.error); }
+  } catch (e) { showError('Request failed: ' + e.message); }
+}
+
+// Markdown conversion
+async function toMarkdown() {
+  hideError();
+  const json = $input.value.trim();
+  if (!json) return;
+  try {
+    const res = await fetch('/api/to-markdown', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ json })
+    });
+    const data = await res.json();
+    if (data.valid) {
+      setOutput(data.result, false);
+      setStatus('Converted to Markdown ✓');
+    } else { showError(data.error); }
+  } catch (e) { showError('Request failed: ' + e.message); }
+}
+
+async function fromMarkdown() {
+  hideError();
+  const markdown = $input.value.trim();
+  if (!markdown) return;
+  try {
+    const res = await fetch('/api/from-markdown', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ markdown })
+    });
+    const data = await res.json();
+    if (data.valid) {
+      setOutput(data.result);
+      setStatus('Extracted JSON from Markdown ✓');
+    } else { showError(data.error); }
+  } catch (e) { showError('Request failed: ' + e.message); }
+}
+
+// Search in output
+function searchOutput() {
+  const query = $searchInput.value;
+  if (!query || !lastFormattedText) {
+    // Restore original output
+    if (lastFormattedText) {
+      $output.innerHTML = wrapLines(highlightJSON(lastFormattedText));
+    }
+    $matchCount.textContent = '';
+    return;
+  }
+
+  // Get current HTML, strip old highlights, then add new ones
+  let html = highlightJSON(lastFormattedText);
+  html = wrapLines(html);
+
+  // We need to highlight in the text nodes only (not inside tags)
+  const escapedQuery = escHtml(query).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`(${escapedQuery})`, 'gi');
+  let count = 0;
+
+  // Split by tags, only replace in non-tag segments
+  const parts = html.split(/(<[^>]+>)/);
+  for (let i = 0; i < parts.length; i++) {
+    if (!parts[i].startsWith('<')) {
+      parts[i] = parts[i].replace(regex, () => { count++; return `<mark class="search-hl">$1</mark>`; });
+    }
+  }
+
+  $output.innerHTML = parts.join('');
+  $matchCount.textContent = count ? `${count} match${count > 1 ? 'es' : ''}` : 'No matches';
+}
+
+// JSON Path on click
+$output.addEventListener('click', function(e) {
+  const lineEl = e.target.closest('.json-line');
+  if (!lineEl) return;
+  const lineIdx = parseInt(lineEl.dataset.line);
+  try {
+    const text = lastFormattedText;
+    if (!text) return;
+    const parsed = JSON.parse(text);
+    const lines = text.split('\n');
+    const path = getJsonPathForLine(lines, lineIdx, parsed);
+    $pathBar.textContent = path || '$';
+  } catch (_) {
+    $pathBar.textContent = '(not valid JSON)';
+  }
+});
+
+function getJsonPathForLine(lines, targetLine, parsed) {
+  // Walk through formatted JSON lines, tracking path via brace/bracket counting
+  const path = ['$'];
+  const stack = []; // {type: 'object'|'array', index: 0}
+  let currentKey = null;
+
+  for (let i = 0; i <= targetLine && i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+
+    // Detect key
+    const keyMatch = line.match(/^"([^"\\]*(?:\\.[^"\\]*)*)"(\s*:\s*)/);
+    if (keyMatch) {
+      currentKey = keyMatch[1];
+    }
+
+    if (line.includes('{') || line.includes('[')) {
+      const opens = line.match(/[\[{]/g) || [];
+      for (const ch of opens) {
+        if (currentKey !== null) {
+          path.push('.' + currentKey);
+          currentKey = null;
+        } else if (stack.length > 0 && stack[stack.length - 1].type === 'array') {
+          path.push('[' + stack[stack.length - 1].index + ']');
+        }
+        stack.push({ type: ch === '{' ? 'object' : 'array', index: 0 });
+      }
+    }
+
+    if (line.includes('}') || line.includes(']')) {
+      const closes = line.match(/[\]}]/g) || [];
+      for (const ch of closes) {
+        stack.pop();
+        // Remove last path segment
+        if (path.length > 1) path.pop();
+        // Increment parent array index
+        if (stack.length > 0 && stack[stack.length - 1].type === 'array') {
+          stack[stack.length - 1].index++;
+        }
+      }
+      if (!line.includes('{') && !line.includes('[')) continue;
+    }
+
+    // Simple value line (in object or array)
+    if (!line.includes('{') && !line.includes('[') && !line.includes('}') && !line.includes(']')) {
+      // After processing, if this is the target line, build path
+      if (i === targetLine) {
+        let p = path.join('');
+        if (currentKey !== null) {
+          p += '.' + currentKey;
+        } else if (stack.length > 0 && stack[stack.length - 1].type === 'array') {
+          p += '[' + stack[stack.length - 1].index + ']';
+        }
+        return p;
+      }
+      // If it's a comma-terminated value, increment array index
+      if (stack.length > 0 && stack[stack.length - 1].type === 'array') {
+        stack[stack.length - 1].index++;
+      }
+      currentKey = null;
+      continue;
+    }
+
+    if (i === targetLine) {
+      let p = path.join('');
+      if (currentKey !== null) p += '.' + currentKey;
+      return p;
+    }
+    currentKey = null;
+  }
+
+  return path.join('');
+}
+
+function copyPathBar() {
+  const text = $pathBar.textContent;
+  if (text && !text.startsWith('(') && !text.startsWith('Click')) {
+    navigator.clipboard.writeText(text).then(() => setStatus('Path copied ✓'));
   }
 }
 
@@ -326,6 +602,10 @@ function clearAll() {
   $output.innerHTML = '';
   $inputInfo.textContent = '';
   $outputInfo.textContent = '';
+  $pathBar.textContent = '';
+  $searchInput.value = '';
+  $matchCount.textContent = '';
+  lastFormattedText = '';
   hideError();
   setStatus('Ready');
 }
@@ -417,6 +697,13 @@ document.addEventListener('mouseup', () => dragging = false);
 document.addEventListener('keydown', e => {
   if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); formatJSON(); }
   if ((e.ctrlKey || e.metaKey) && e.key === 'm') { e.preventDefault(); minifyJSON(); }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+    // Focus search if output pane is active
+    if (document.activeElement !== $input) {
+      e.preventDefault();
+      $searchInput.focus();
+    }
+  }
 });
 
 // Load history on start
