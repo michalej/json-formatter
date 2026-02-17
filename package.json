@@ -1,0 +1,14 @@
+{
+  "name": "json-formatter",
+  "version": "1.0.0",
+  "description": "JSON parser/formatter with AI fix",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "mongodb": "^6.12.0",
+    "@anthropic-ai/sdk": "^0.39.0"
+  }
+}

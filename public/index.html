@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JSON Formatter</title>
+<style>
+:root { --bg: #1a1a2e; --surface: #16213e; --surface2: #0f3460; --text: #e0e0e0; --text2: #a0a0a0; --accent: #e94560; --accent2: #533483; --green: #4ecca3; --red: #e94560; --border: #2a2a4a; --input-bg: #0d1117; --font: 'Segoe UI', system-ui, sans-serif; --mono: 'Cascadia Code', 'Fira Code', monospace; }
+[data-theme="light"] { --bg: #f5f5f5; --surface: #ffffff; --surface2: #e8e8e8; --text: #1a1a1a; --text2: #666; --accent: #e94560; --accent2: #7c3aed; --green: #059669; --red: #dc2626; --border: #d0d0d0; --input-bg: #fafafa; }
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; }
+
+/* Header */
+header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 20px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+header h1 { font-size: 1.2rem; color: var(--accent); white-space: nowrap; }
+.toolbar { display: flex; gap: 8px; flex-wrap: wrap; flex: 1; }
+.btn { padding: 8px 16px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface2); color: var(--text); cursor: pointer; font-size: 0.85rem; transition: all 0.2s; white-space: nowrap; }
+.btn:hover { border-color: var(--accent); }
+.btn-primary { background: var(--accent); color: white; border-color: var(--accent); }
+.btn-primary:hover { opacity: 0.85; }
+.btn-ai { background: var(--accent2); color: white; border-color: var(--accent2); }
+.btn-ai:hover { opacity: 0.85; }
+.btn-ai:disabled { opacity: 0.5; cursor: wait; }
+select { padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface2); color: var(--text); font-size: 0.85rem; }
+.theme-toggle { margin-left: auto; cursor: pointer; font-size: 1.3rem; background: none; border: none; }
+
+/* Main layout */
+.main { display: flex; flex: 1; overflow: hidden; }
+.pane { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.pane-header { padding: 8px 16px; background: var(--surface); border-bottom: 1px solid var(--border); font-size: 0.8rem; color: var(--text2); display: flex; justify-content: space-between; align-items: center; }
+textarea { flex: 1; width: 100%; padding: 16px; background: var(--input-bg); color: var(--text); border: none; resize: none; font-family: var(--mono); font-size: 14px; line-height: 1.6; outline: none; }
+.output-area { flex: 1; overflow: auto; padding: 16px; background: var(--input-bg); font-family: var(--mono); font-size: 14px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+.divider { width: 3px; background: var(--border); cursor: col-resize; flex-shrink: 0; }
+.divider:hover { background: var(--accent); }
+
+/* Sidebar */
+.sidebar { width: 260px; background: var(--surface); border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; }
+.sidebar.hidden { display: none; }
+.sidebar-header { padding: 12px 16px; font-size: 0.85rem; font-weight: 600; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.history-list { flex: 1; overflow-y: auto; }
+.history-item { padding: 10px 16px; border-bottom: 1px solid var(--border); cursor: pointer; font-size: 0.8rem; display: flex; justify-content: space-between; align-items: start; gap: 8px; }
+.history-item:hover { background: var(--surface2); }
+.history-item .label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text2); }
+.history-item .time { font-size: 0.7rem; color: var(--text2); white-space: nowrap; }
+.history-item .del { color: var(--red); cursor: pointer; opacity: 0; font-size: 0.75rem; }
+.history-item:hover .del { opacity: 1; }
+
+/* Error banner */
+.error-banner { padding: 10px 16px; background: rgba(233,69,96,0.15); color: var(--red); font-size: 0.85rem; border-bottom: 1px solid var(--red); display: none; }
+.error-banner.show { display: block; }
+
+/* Diff view */
+.diff-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 100; }
+.diff-overlay.show { display: flex; }
+.diff-box { background: var(--surface); border-radius: 12px; padding: 20px; max-width: 700px; width: 90%; max-height: 80vh; overflow-y: auto; }
+.diff-box h3 { margin-bottom: 12px; }
+.diff-line { font-family: var(--mono); font-size: 13px; padding: 2px 8px; border-radius: 3px; margin: 2px 0; }
+.diff-line.removed { background: rgba(233,69,96,0.2); color: var(--red); }
+.diff-line.added { background: rgba(78,204,163,0.2); color: var(--green); }
+.diff-box .btn { margin-top: 12px; }
+
+/* Syntax highlighting */
+.json-key { color: #e06c75; }
+.json-string { color: #98c379; }
+.json-number { color: #d19a66; }
+.json-bool { color: #c678dd; }
+.json-null { color: #56b6c2; }
+
+/* Spinner */
+.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 6px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Status bar */
+.status-bar { padding: 4px 16px; background: var(--surface); border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text2); display: flex; gap: 16px; }
+
+/* Mobile */
+@media (max-width: 768px) {
+  .main { flex-direction: column; }
+  .divider { width: 100%; height: 3px; cursor: row-resize; }
+  .sidebar { width: 100%; max-height: 200px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⚡ JSON Formatter</h1>
+  <div class="toolbar">
+    <button class="btn btn-primary" onclick="formatJSON()">Format</button>
+    <button class="btn" onclick="minifyJSON()">Minify</button>
+    <select id="indentSelect">
+      <option value="2">2 spaces</option>
+      <option value="4">4 spaces</option>
+      <option value="tab">Tabs</option>
+    </select>
+    <button class="btn btn-ai" id="fixBtn" onclick="fixWithAI()">🤖 Fix with AI</button>
+    <button class="btn" onclick="copyOutput()">📋 Copy</button>
+    <button class="btn" onclick="saveToHistory()">💾 Save</button>
+    <button class="btn" onclick="clearAll()">Clear</button>
+    <button class="btn" id="sidebarToggle" onclick="toggleSidebar()">History ▸</button>
+  </div>
+  <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+</header>
+
+<div class="error-banner" id="errorBanner"></div>
+
+<div class="main">
+  <div class="pane">
+    <div class="pane-header">
+      <span>INPUT</span>
+      <span id="inputInfo"></span>
+    </div>
+    <textarea id="input" placeholder="Paste your JSON here..." spellcheck="false"></textarea>
+  </div>
+  <div class="divider" id="divider"></div>
+  <div class="pane">
+    <div class="pane-header">
+      <span>OUTPUT</span>
+      <span id="outputInfo"></span>
+    </div>
+    <div class="output-area" id="output"></div>
+  </div>
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span>History</span>
+      <button class="btn" style="padding:4px 8px;font-size:0.75rem" onclick="loadHistory()">↻</button>
+    </div>
+    <div class="history-list" id="historyList"></div>
+  </div>
+</div>
+
+<div class="status-bar">
+  <span id="statusText">Ready</span>
+</div>
+
+<div class="diff-overlay" id="diffOverlay" onclick="if(event.target===this)closeDiff()">
+  <div class="diff-box">
+    <h3>🤖 AI Changes</h3>
+    <div id="diffContent"></div>
+    <button class="btn btn-primary" onclick="applyFix()">Apply Fix</button>
+    <button class="btn" onclick="closeDiff()">Cancel</button>
+  </div>
+</div>
+
+<script>
+const $input = document.getElementById('input');
+const $output = document.getElementById('output');
+const $error = document.getElementById('errorBanner');
+const $inputInfo = document.getElementById('inputInfo');
+const $outputInfo = document.getElementById('outputInfo');
+const $status = document.getElementById('statusText');
+const $fixBtn = document.getElementById('fixBtn');
+
+let lastFix = '';
+
+// Auto-format on paste
+$input.addEventListener('input', () => {
+  updateInputInfo();
+  hideError();
+});
+
+function updateInputInfo() {
+  const len = $input.value.length;
+  const lines = $input.value.split('\n').length;
+  $inputInfo.textContent = `${len.toLocaleString()} chars · ${lines} lines`;
+}
+
+function setStatus(text) { $status.textContent = text; }
+function showError(msg) { $error.textContent = msg; $error.classList.add('show'); }
+function hideError() { $error.classList.remove('show'); }
+
+function highlightJSON(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"([^"\\]*(\\.[^"\\]*)*)"\s*:/g, '<span class="json-key">"$1"</span>:')
+    .replace(/"([^"\\]*(\\.[^"\\]*)*)"/g, '<span class="json-string">"$1"</span>')
+    .replace(/\b(-?\d+\.?\d*([eE][+-]?\d+)?)\b/g, '<span class="json-number">$1</span>')
+    .replace(/\b(true|false)\b/g, '<span class="json-bool">$1</span>')
+    .replace(/\bnull\b/g, '<span class="json-null">null</span>');
+}
+
+async function formatJSON() {
+  hideError();
+  const json = $input.value.trim();
+  if (!json) return;
+  const indent = document.getElementById('indentSelect').value;
+
+  try {
+    const res = await fetch('/api/format', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ json, indent: indent === 'tab' ? 'tab' : Number(indent) })
+    });
+    const data = await res.json();
+    if (data.valid) {
+      $output.innerHTML = highlightJSON(data.formatted);
+      $outputInfo.textContent = `${data.formatted.length.toLocaleString()} chars`;
+      setStatus('Formatted ✓');
+    } else {
+      showError(data.error);
+      $output.textContent = '';
+      setStatus('Parse error');
+    }
+  } catch (e) {
+    showError('Request failed: ' + e.message);
+  }
+}
+
+async function minifyJSON() {
+  hideError();
+  const json = $input.value.trim();
+  if (!json) return;
+  try {
+    const res = await fetch('/api/minify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ json })
+    });
+    const data = await res.json();
+    if (data.valid) {
+      $output.innerHTML = highlightJSON(data.formatted);
+      $outputInfo.textContent = `${data.formatted.length.toLocaleString()} chars`;
+      setStatus('Minified ✓');
+    } else {
+      showError(data.error);
+    }
+  } catch (e) { showError('Request failed: ' + e.message); }
+}
+
+async function fixWithAI() {
+  hideError();
+  const json = $input.value.trim();
+  if (!json) return;
+  $fixBtn.disabled = true;
+  $fixBtn.innerHTML = '<span class="spinner"></span>Fixing...';
+  setStatus('AI is analyzing...');
+
+  try {
+    const res = await fetch('/api/fix', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ json })
+    });
+    const data = await res.json();
+    if (data.error) { showError(data.error); setStatus('AI fix failed'); return; }
+
+    lastFix = data.fixed;
+    if (data.changes && data.changes.length > 0) {
+      showDiff(data.changes);
+      setStatus(`AI found ${data.changes.length} changes`);
+    } else {
+      $output.innerHTML = highlightJSON(data.fixed);
+      setStatus('AI: no changes needed ✓');
+    }
+  } catch (e) { showError('AI fix failed: ' + e.message); }
+  finally {
+    $fixBtn.disabled = false;
+    $fixBtn.innerHTML = '🤖 Fix with AI';
+  }
+}
+
+function showDiff(changes) {
+  const $diff = document.getElementById('diffContent');
+  $diff.innerHTML = changes.map(c =>
+    `<div class="diff-line removed">- L${c.line}: ${escHtml(c.original)}</div>` +
+    `<div class="diff-line added">+ L${c.line}: ${escHtml(c.fixed)}</div>`
+  ).join('');
+  document.getElementById('diffOverlay').classList.add('show');
+}
+
+function applyFix() {
+  $input.value = lastFix;
+  updateInputInfo();
+  closeDiff();
+  formatJSON();
+  setStatus('AI fix applied ✓');
+}
+
+function closeDiff() { document.getElementById('diffOverlay').classList.remove('show'); }
+
+function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function copyOutput() {
+  const text = $output.textContent;
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => setStatus('Copied ✓'));
+}
+
+function clearAll() {
+  $input.value = '';
+  $output.innerHTML = '';
+  $inputInfo.textContent = '';
+  $outputInfo.textContent = '';
+  hideError();
+  setStatus('Ready');
+}
+
+// Theme
+function toggleTheme() {
+  const html = document.documentElement;
+  const current = html.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  document.querySelector('.theme-toggle').textContent = next === 'dark' ? '🌙' : '☀️';
+  localStorage.setItem('theme', next);
+}
+const savedTheme = localStorage.getItem('theme');
+if (savedTheme) {
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  document.querySelector('.theme-toggle').textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+}
+
+// Sidebar
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  sb.classList.toggle('hidden');
+  document.getElementById('sidebarToggle').textContent = sb.classList.contains('hidden') ? 'History ▸' : 'History ◂';
+  if (!sb.classList.contains('hidden')) loadHistory();
+}
+
+async function loadHistory() {
+  try {
+    const res = await fetch('/api/history');
+    const items = await res.json();
+    const $list = document.getElementById('historyList');
+    if (!items.length) { $list.innerHTML = '<div style="padding:16px;color:var(--text2);font-size:0.8rem">No history yet</div>'; return; }
+    $list.innerHTML = items.map(i => `
+      <div class="history-item" onclick="loadHistoryItem('${escHtml(encodeURIComponent(i.content))}')">
+        <span class="label">${escHtml(i.label)}</span>
+        <span class="time">${new Date(i.timestamp).toLocaleString()}</span>
+        <span class="del" onclick="event.stopPropagation();deleteHistory('${i._id}')">✕</span>
+      </div>
+    `).join('');
+  } catch (e) { console.warn('History load failed', e); }
+}
+
+function loadHistoryItem(encoded) {
+  $input.value = decodeURIComponent(encoded);
+  updateInputInfo();
+  formatJSON();
+}
+
+async function saveToHistory() {
+  const content = $input.value.trim();
+  if (!content) return;
+  try {
+    await fetch('/api/history', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content, formatted: $output.textContent })
+    });
+    setStatus('Saved ✓');
+    loadHistory();
+  } catch (e) { showError('Save failed: ' + e.message); }
+}
+
+async function deleteHistory(id) {
+  try {
+    await fetch(`/api/history/${id}`, { method: 'DELETE' });
+    loadHistory();
+  } catch (e) { console.warn(e); }
+}
+
+// Resizable divider
+const divider = document.getElementById('divider');
+let dragging = false;
+divider.addEventListener('mousedown', () => dragging = true);
+document.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  const main = document.querySelector('.main');
+  const rect = main.getBoundingClientRect();
+  const panes = main.querySelectorAll('.pane');
+  const pct = ((e.clientX - rect.left) / rect.width) * 100;
+  if (pct > 20 && pct < 80) {
+    panes[0].style.flex = `0 0 ${pct}%`;
+    panes[1].style.flex = `1`;
+  }
+});
+document.addEventListener('mouseup', () => dragging = false);
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); formatJSON(); }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'm') { e.preventDefault(); minifyJSON(); }
+});
+
+// Load history on start
+loadHistory();
+</script>
+</body>
+</html>
