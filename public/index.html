@@ -464,7 +464,7 @@ function searchOutput() {
   const parts = html.split(/(<[^>]+>)/);
   for (let i = 0; i < parts.length; i++) {
     if (!parts[i].startsWith('<')) {
-      parts[i] = parts[i].replace(regex, () => { count++; return `<mark class="search-hl">$1</mark>`; });
+      parts[i] = parts[i].replace(regex, (match) => { count++; return `<mark class="search-hl">${match}</mark>`; });
     }
   }
 
