@@ -171,12 +171,47 @@ function showError(msg) { $error.textContent = msg; $error.classList.add('show')
 function hideError() { $error.classList.remove('show'); }
 
 function highlightJSON(str) {
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/"([^"\\]*(\\.[^"\\]*)*)"\s*:/g, '<span class="json-key">"$1"</span>:')
-    .replace(/"([^"\\]*(\\.[^"\\]*)*)"/g, '<span class="json-string">"$1"</span>')
-    .replace(/\b(-?\d+\.?\d*([eE][+-]?\d+)?)\b/g, '<span class="json-number">$1</span>')
-    .replace(/\b(true|false)\b/g, '<span class="json-bool">$1</span>')
-    .replace(/\bnull\b/g, '<span class="json-null">null</span>');
+  // Tokenize and highlight JSON properly
+  var result = '';
+  var i = 0;
+  while (i < str.length) {
+    var ch = str[i];
+    if (ch === '"') {
+      // Read full string
+      var s = '"'; i++;
+      while (i < str.length) {
+        if (str[i] === '\\') { s += str[i] + (str[i+1]||''); i += 2; }
+        else if (str[i] === '"') { s += '"'; i++; break; }
+        else { s += str[i]; i++; }
+      }
+      var escaped = s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      // Check if this is a key (followed by optional whitespace and colon)
+      var rest = str.slice(i);
+      var m = rest.match(/^(\s*):/);
+      if (m) {
+        result += '<span class="json-key">' + escaped + '</span>' + m[1] + ':';
+        i += m[0].length;
+      } else {
+        result += '<span class="json-string">' + escaped + '</span>';
+      }
+    } else if (/[-\d]/.test(ch)) {
+      var num = '';
+      while (i < str.length && /[\deE.+\-]/.test(str[i])) { num += str[i]; i++; }
+      if (/^-?\d+(\.\d+)?([eE][+-]?\d+)?$/.test(num)) {
+        result += '<span class="json-number">' + num + '</span>';
+      } else { result += num; }
+    } else if (str.slice(i,i+4) === 'true') {
+      result += '<span class="json-bool">true</span>'; i += 4;
+    } else if (str.slice(i,i+5) === 'false') {
+      result += '<span class="json-bool">false</span>'; i += 5;
+    } else if (str.slice(i,i+4) === 'null') {
+      result += '<span class="json-null">null</span>'; i += 4;
+    } else {
+      result += (ch === '<' ? '&lt;' : ch === '>' ? '&gt;' : ch === '&' ? '&amp;' : ch);
+      i++;
+    }
+  }
+  return result;
 }
 
 async function formatJSON() {
