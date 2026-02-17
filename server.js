@@ -69,7 +69,9 @@ app.post('/api/fix', async (req, res) => {
       }]
     });
 
-    const fixed = message.content[0].text.trim();
+    let fixed = message.content[0].text.trim();
+    // Strip markdown code fences if present
+    fixed = fixed.replace(/^```(?:json)?\s*\n?/, '').replace(/\n?```\s*$/, '').trim();
 
     // Generate simple diff
     const originalLines = json.split('\n');
